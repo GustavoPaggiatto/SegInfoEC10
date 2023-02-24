@@ -2,6 +2,15 @@
 using System.Threading;
 using CesarCifer;
 
+/*
+ * Nomes e RAs:
+ * Gustavo Henrique Cechini Paggiatto - 082180006
+ * Julio Cesar Rodrigues Lima         - 082180012
+ * Gustavo Ribeiro                    - 082180026
+ * Eleni Oliveira                     - 082180021
+ * 
+ */
+
 Console.WriteLine("********** Cesar Cifer **********");
 
 Console.WriteLine("Options:");
@@ -18,7 +27,10 @@ var criptoService = new CesarCriptoService();
 var cancellationToken = new CancellationToken();
 
 if (option == 1)
+{
     await criptoService.CriptoAsync(filePath, cancellationToken);
+    Console.WriteLine("AGORA PAGUE!!!");
+}
 else
     await criptoService.DecriptAsync(filePath, cancellationToken);
 
