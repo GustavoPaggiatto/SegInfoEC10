@@ -1,11 +1,10 @@
-﻿using System.Net;
-using System.Net.Sockets;
+﻿using ConsoleApp1;
 
 Console.ForegroundColor = ConsoleColor.Magenta;
 
 Console.WriteLine("*************** Server UDP RSA ***************");
 
-RsaKey key = default;
+RsaKey key = default!;
 
 while (true)
 {
@@ -23,10 +22,25 @@ while (true)
     if (opt == 1)
     {
         key = new KeyGenerator().GenerateKey();
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("\n\rKey: ");
+        Console.WriteLine("P: " + key.P);
+        Console.WriteLine("Q: " + key.Q);
+        Console.WriteLine("N: " + key.N);
+        Console.WriteLine("E: " + key.E);
     }
     else if (opt == 2)
     {
-        new RsaDecriptor(key);
+        var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
+        
+        new SecureUdpServer(key).StartAsync(cancellationToken);
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Pressione qualquer tecla para interromper o servidor UDP.");
+        Console.ReadKey();
+        cancellationTokenSource.Cancel();
     }
     else
     {
@@ -35,21 +49,5 @@ while (true)
 }
 
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("Saindo...");
-
-var socket = new Socket(SocketType.Dgram, ProtocolType.Udp);
-socket.Bind(new IPEndPoint(new IPAddress(new byte[] { 127, 0, 0, 1 }), 8000));
-socket.Listen();
-
-var cancellationToken = new CancellationToken();
-
-while (true) 
-{
-    if (cancellationToken.IsCancellationRequested)
-        break;
-
-    Memory<byte> buffer = new Memory<byte>();
-
-
-    socket.ReceiveAsync(buffer, SocketFlags.None);
-}
+Console.WriteLine("Saind...");
+Thread.Sleep(2000);

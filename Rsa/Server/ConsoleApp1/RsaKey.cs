@@ -1,11 +1,21 @@
-﻿internal sealed class RsaKey
+﻿using System.Numerics;
+
+internal sealed class RsaKey
 {
-    public RsaKey(long @public, long @private)
+    public RsaKey(
+        BigInteger p,
+        BigInteger q,
+        BigInteger n,
+        BigInteger e)
     {
-        Public = @public;
-        Private = @private;
+        P = p;
+        Q = q;
+        N = n;
+        E = e;
     }
 
-    long Public { get; }
-    long Private { get; }
+    public BigInteger P { get; }
+    public BigInteger Q { get; }
+    public BigInteger N { get; }
+    public BigInteger E { get; }
 }
