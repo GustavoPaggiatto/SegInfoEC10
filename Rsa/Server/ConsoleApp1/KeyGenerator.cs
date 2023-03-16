@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using System.Security.Cryptography;
+﻿using Org.BouncyCastle.Math;
 
 internal sealed class KeyGenerator
 {
@@ -14,32 +13,40 @@ internal sealed class KeyGenerator
 
         var n = GetN(p, q);
         var totient = GetTotient(p, q);
-        var e = Euler();
+        var e = Euler(totient);
         var d = GetD(e, totient);
 
-        return new RsaKey(p, q, n, e);
+        return new RsaKey(p, q, n, e, d);
     }
 
     private BigInteger GetN(BigInteger p, BigInteger q)
     {
-        return BigInteger.Multiply(p, q);
+        return p.Multiply(q);
     }
 
-    private int Euler()
+    private BigInteger Euler(BigInteger totient)
     {
-        return 2;
+        var euler = new BigInteger("3");
+
+        while (totient.Gcd(euler).IntValue > 1)
+        {
+            euler = euler.Add(new BigInteger("2"));
+        }
+        
+        return euler;
     }
 
     private BigInteger GetTotient(BigInteger p, BigInteger q) 
-        => BigInteger.Multiply(
-            BigInteger.Subtract(p, BigInteger.One), 
-            BigInteger.Subtract(q, BigInteger.One));
+        => p
+            .Subtract(BigInteger.One)
+            .Multiply(
+                q.Subtract(BigInteger.One));
 
     private BigInteger GetD(BigInteger euler, BigInteger totiente)
     {
-        var aux = BigInteger.Add(totiente, BigInteger.One);
-        
-        return BigInteger.Divide(aux, euler);
+        var result = euler.ModInverse(totiente);
+
+        return result;
     }
 
     private BigInteger GeneratePrimeNumbers()
@@ -51,64 +58,10 @@ internal sealed class KeyGenerator
             var bytes = new byte[96];
             random.NextBytes(bytes);
 
-            var number = new BigInteger(bytes);
+            var number = new BigInteger(1, bytes);
 
-            if (IsProbablePrime(number))
+            if (number.IsProbablePrime(100))
                 return number;
         }
-    }
-    
-    private bool IsProbablePrime(BigInteger source)
-    {
-        if (source == 2 || source == 3)
-            return true;
-        
-        if (source < 2 || source % 2 == 0)
-            return false;
-
-        BigInteger d = source - 1;
-        int s = 0;
-
-        while (d % 2 == 0)
-        {
-            d /= 2;
-            s += 1;
-        }
-
-        RandomNumberGenerator rng = RandomNumberGenerator.Create();
-        byte[] bytes = new byte[source.ToByteArray().LongLength];
-
-        for (int i = 0; i < 100; i++)
-        {
-            BigInteger number;
-            
-            do
-            {
-                rng.GetBytes(bytes);
-                number = new BigInteger(bytes);
-            }
-            while (number < 2 || number >= source - 2);
-
-            BigInteger aux = BigInteger.ModPow(number, d, source);
-            
-            if (aux == 1 || aux == source - 1)
-                continue;
-
-            for (int r = 1; r < s; r++)
-            {
-                aux = BigInteger.ModPow(aux, 2, source);
-                
-                if (aux == 1)
-                    return false;
-                
-                if (aux == source - 1)
-                    break;
-            }
-
-            if (aux != source - 1)
-                return false;
-        }
-
-        return true;
     }
 }
